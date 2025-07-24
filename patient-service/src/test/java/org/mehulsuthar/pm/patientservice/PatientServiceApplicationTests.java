@@ -1,4 +1,4 @@
-package org.mehulsuthar.pm.patientservice;
+package java.org.mehulsuthar.pm.patientservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
