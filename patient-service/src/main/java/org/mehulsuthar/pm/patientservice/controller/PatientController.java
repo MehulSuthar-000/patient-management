@@ -2,8 +2,6 @@ package org.mehulsuthar.pm.patientservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Null;
 import jakarta.validation.groups.Default;
 import org.mehulsuthar.pm.patientservice.dto.PatientRequestDTO;
 import org.mehulsuthar.pm.patientservice.dto.PatientResponseDTO;
