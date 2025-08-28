@@ -4,6 +4,8 @@ import org.mehulsuthar.pm.patientservice.dto.PatientRequestDTO;
 import org.mehulsuthar.pm.patientservice.dto.PatientResponseDTO;
 import org.mehulsuthar.pm.patientservice.exception.EmailAlreadyExistsException;
 import org.mehulsuthar.pm.patientservice.exception.PatientNotFoundException;
+import org.mehulsuthar.pm.patientservice.grpc.BillingServiceGrpcClient;
+import org.mehulsuthar.pm.patientservice.kafka.KafkaProducer;
 import org.mehulsuthar.pm.patientservice.mapper.PatientMapper;
 import org.mehulsuthar.pm.patientservice.model.Patient;
 import org.mehulsuthar.pm.patientservice.repository.PatientRepository;
@@ -19,9 +21,13 @@ import java.util.stream.Collectors;
 @Service
 public class PatientService {
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient  billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
 
-    public PatientService(PatientRepository patientRepository) {
+    public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient, KafkaProducer kafkaProducer) {
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public List<PatientResponseDTO> getPatients() {
@@ -42,6 +48,12 @@ public class PatientService {
 
         Patient newPatient = patientRepository.save(
                 PatientMapper.toEntity(patientRequestDTO));
+
+        // Create a Billing Account corresponding to the newly created patient.
+        billingServiceGrpcClient.createBillingAccount(newPatient.getId().toString(),
+                newPatient.getName(), newPatient.getEmail());
+
+        kafkaProducer.sendEvent(newPatient);
 
 
         return PatientMapper.toDTO(newPatient);
@@ -69,5 +81,4 @@ public class PatientService {
     public void deletePatient(UUID id) {
         patientRepository.deleteById(id);
     }
-
 }
